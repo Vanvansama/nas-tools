@@ -29,7 +29,15 @@ const search_source_icon = {
        <path d="M10 12h2a2 2 0 1 0 0 -4h-2v8"></path>
        <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
     </svg>
-  `
+  `,
+  metatube: html`
+    <!-- http://metatube-host -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-square-rounded-letter-p text-red" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M10 12h2a2 2 0 1 0 0 -4h-2v8"></path>
+      <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
+    </svg>
+    `
 }
 
 export class LayoutSearchbar extends CustomElement {
@@ -93,7 +101,8 @@ export class LayoutSearchbar extends CustomElement {
                   let source_dict = {
                     tmdb: "douban",
                     douban: "person",
-                    person: "tmdb"
+                    person: "metatube",
+                    metatube: "tmdb"
                   };
                   this._search_source = source_dict[this._search_source];
                   localStorage.setItem("SearchSource", this._search_source);

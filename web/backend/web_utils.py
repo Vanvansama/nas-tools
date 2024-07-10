@@ -2,12 +2,13 @@ from functools import lru_cache
 
 import cn2an
 
-from app.media import Media, Bangumi, DouBan
+from app.media import Media, Bangumi, DouBan, MetaTube
 from app.media.meta import MetaInfo
 from app.utils import StringUtils, ExceptionUtils, SystemUtils, RequestUtils, IpUtils
 from app.utils.types import MediaType
 from config import Config
 from version import APP_VERSION
+import log
 
 
 class WebUtils:
@@ -139,7 +140,9 @@ class WebUtils:
         if not keyword:
             return []
         mtype, key_word, season_num, episode_num, _, content = StringUtils.get_keyword_from_string(keyword)
-        if source == "tmdb":
+        if source == "metatube":
+            return MetaTube().search_metatube_medias(keyword=key_word)
+        elif source == "tmdb":
             use_douban_titles = False
         elif source == "douban":
             use_douban_titles = True
@@ -168,6 +171,8 @@ class WebUtils:
                 if tmp_info.begin_episode:
                     tmp_info.title = "%s 第%s集" % (tmp_info.title, meta_info.begin_episode)
                 medias.append(tmp_info)
+
+        log.info(medias)
         return medias
 
     @staticmethod
