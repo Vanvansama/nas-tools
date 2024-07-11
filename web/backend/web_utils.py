@@ -116,6 +116,13 @@ class WebUtils:
                 media_info = Media().get_media_info(title=f"{title_cn} {year}",
                                                     mtype=MediaType.TV,
                                                     append_to_response="all")
+        elif str(mediaid).startswith("MT:"):
+            # MetaTube
+            metatubeid = mediaid[3:]
+            provider = ""
+            info = MetaTube().get_metatube_detail(metatubeid=metatubeid, provider=provider, mtype=mtype, wait=wait)
+            if not info:
+                return None
         else:
             # TMDB
             info = Media().get_tmdb_info(tmdbid=mediaid,
@@ -133,7 +140,7 @@ class WebUtils:
         """
         搜索TMDB或豆瓣词条
         :param: keyword 关键字
-        :param: source 渠道 tmdb/douban
+        :param: source 渠道 tmdb/douban/metatube
         :param: season 季号
         :param: episode 集号
         """
@@ -141,7 +148,7 @@ class WebUtils:
             return []
         mtype, key_word, season_num, episode_num, _, content = StringUtils.get_keyword_from_string(keyword)
         if source == "metatube":
-            return MetaTube().search_metatube_medias(keyword=key_word)
+            return MetaTube().search_metatube_medias(keyword=key_word, page=page)
         elif source == "tmdb":
             use_douban_titles = False
         elif source == "douban":
@@ -172,7 +179,6 @@ class WebUtils:
                     tmp_info.title = "%s 第%s集" % (tmp_info.title, meta_info.begin_episode)
                 medias.append(tmp_info)
 
-        log.info(medias)
         return medias
 
     @staticmethod

@@ -1,14 +1,8 @@
-import random
 from threading import Lock
-from time import sleep
-
-import zhconv
 
 import log
-from app.media.metatube import MetaTubeApi
+from app.media.metatubeapi import MetaTubeApi
 from app.media.meta import MetaInfo
-from app.utils import ExceptionUtils, StringUtils
-from app.utils import RequestUtils
 from app.utils.commons import singleton
 from app.utils.types import MediaType
 
@@ -38,36 +32,42 @@ class MetaTube:
         if not result:
             return []
         ret_medias = []
-        for item_obj in result.get("items"):
-            if mtype and mtype.value != item_obj.get("type_name"):
-                continue
-            if item_obj.get("type_name") not in (MediaType.TV.value, MediaType.MOVIE.value):
-                continue
-            item = item_obj.get("target")
+        for item_obj in result.get("data"):
+            item = item_obj
             meta_info = MetaInfo(title=item.get("title"))
             meta_info.title = item.get("title")
-            if item_obj.get("type_name") == MediaType.MOVIE.value:
-                meta_info.type = MediaType.MOVIE
-            else:
-                meta_info.type = MediaType.TV
-            if season:
-                if meta_info.type != MediaType.TV:
-                    continue
-                if season != 1 and meta_info.begin_season != season:
-                    continue
-            if episode and str(episode).isdigit():
-                if meta_info.type != MediaType.TV:
-                    continue
-                meta_info.begin_episode = int(episode)
-                meta_info.title = "%s 第%s集" % (meta_info.title, episode)
-            meta_info.year = item.get("year")
-            meta_info.tmdb_id = "DB:%s" % item.get("id")
-            meta_info.douban_id = item.get("id")
-            meta_info.overview = item.get("card_subtitle") or ""
+            meta_info.type = MediaType.MOVIE
+            meta_info.year = item.get("release_date")[0:4]
+            meta_info.tmdb_id = "MT:%s" % item.get("number")
+            meta_info.metatube_id = item.get("number")
+            meta_info.provider = item.get("provider")
+            meta_info.overview = "%s - %s" % (item.get("number"), item.get("provider"))
             meta_info.poster_path = item.get("cover_url").split('?')[0]
-            rating = item.get("rating", {}) or {}
-            meta_info.vote_average = rating.get("value")
+            meta_info.vote_average = item.get("score")
             if meta_info not in ret_medias:
                 ret_medias.append(meta_info)
 
         return ret_medias[(page - 1) * 20:page * 20]
+
+    def get_metatube_detail(self, metatubeid, provider, mtype=None, wait=False):
+        if not provider:
+            log.error("【MetaTube】需要提供provider信息才能查询详情")
+
+        log.info("【MetaTube】正在通过API查询MetaTube详情：%s" % metatubeid)
+
+        res = self.metatubeapi.movie_detail(metatubeid, provider)
+
+        if not res.get("data"):
+            log.warn("【MetaTube】%s %s 未找到MetaTube详细信息" % metatubeid, provider)
+            return None
+
+        metatube_info = res.get("data")
+        if not metatube_info:
+            log.warn("【MetaTube】%s %s 未找到MetaTube详细信息" % metatubeid, provider)
+            return None
+
+        if not metatube_info.get("title"):
+            return None
+
+        log.info("【MetaTube】查询到数据：%s" % metatube_info.get("title"))
+        return metatube_info
