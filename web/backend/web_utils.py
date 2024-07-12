@@ -123,6 +123,16 @@ class WebUtils:
             info = MetaTube().get_metatube_detail(metatubeid=metatubeid, provider=provider, mtype=mtype, wait=wait)
             if not info:
                 return None
+            if not mtype:
+                mtype = MediaType.MOVIE
+            title = info.get("title")
+            year = info.get("year")
+            if not title:
+                return None
+            media_info = Media().get_media_info(title=f"{title} {year}",
+                                                mtype=mtype,
+                                                append_to_response="all")
+            media_info.metatube_id = metatubeid
         else:
             # TMDB
             info = Media().get_tmdb_info(tmdbid=mediaid,

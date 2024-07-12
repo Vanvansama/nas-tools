@@ -144,6 +144,11 @@ class MetaTubeApi(object):
         }
 
     def movie_detail(self, metatubeid, provider):
+        """
+        搜索电影细节
+
+        example: http://192.168.110.83:8085/v1/movies/XXXX/XXX-0001?lazy=True
+        """
         path = "/" + provider + "/" + metatubeid
         params = {
             "lazy": True
